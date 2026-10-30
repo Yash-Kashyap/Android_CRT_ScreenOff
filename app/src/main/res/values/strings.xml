@@ -39,10 +39,6 @@
     <string name="shortcut_unsupported">Your launcher doesn’t support adding shortcuts. Long-press the app icon instead.</string>
     <string name="button_desc">Switch screen off</string>
 
-    <string name="power_on">Power on</string>
-    <string name="crt_on">CRT power-on when the screen wakes</string>
-    <string name="crt_on_hint">A thin white line stretches across, then opens up into the screen, like an old TV warming up (250 ms). The original Android 2.3 phones in your videos turned on instantly; this is the later custom-ROM “CRT on” effect. It never covers your Always On Display.</string>
-    <string name="preview_on">Preview power-on (3× slower)</string>
     <string name="off_now_label">CRT off now</string>
     <string name="side_key_hint">Samsung: Settings → Advanced features → Side key → Double press → Open app → “CRT off now”. Double-pressing the side key then plays the CRT off.</string>
     <string name="sound">Sound</string>
@@ -52,5 +48,5 @@
     <string name="slider_value">%1$s: %2$d%3$s</string>
 
     <string name="tips">Good to know</string>
-    <string name="tips_body">• Android doesn’t let apps animate the real power button: apps are only told after the screen is already dark. Use the floating button, the tile, the shortcut or Volume Down instead.\n• Power-on: optional CRT warm-up (on by default). Turn it off for the instant wake of the original Android 2.3.\n• Android 11+: the real picture on your screen collapses. Android 9–10 can’t take snapshots, so black shutters close in around the screen in the same shape.\n• Banking and other protected screens block snapshots; they use the shutter version too.\n• Your PIN, pattern, fingerprint and face unlock all keep working.\n• No internet permission.</string>
+    <string name="tips_body">• Android doesn’t let apps animate the real power button: apps are only told after the screen is already dark. Use the floating button, the tile, the shortcut or Volume Down instead.\n• Turning the screen on is instant, exactly as in the original Android 2.3 / 4.x.\n• Android 11+: the real picture on your screen collapses. Android 9–10 can’t take snapshots, so black shutters close in around the screen in the same shape.\n• Banking and other protected screens block snapshots; they use the shutter version too.\n• Your PIN, pattern, fingerprint and face unlock all keep working.\n• No internet permission.</string>
 </resources>

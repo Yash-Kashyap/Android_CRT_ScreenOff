@@ -27,10 +27,6 @@ public final class Prefs {
     public boolean volumeDoublePress() { return sp.getBoolean("volume_double", false); }
     public void setVolumeDoublePress(boolean v) { sp.edit().putBoolean("volume_double", v).apply(); }
 
-    /** CRT power-on animation when the screen wakes. */
-    public boolean crtOn() { return sp.getBoolean("crt_on", true); }
-    public void setCrtOn(boolean v) { sp.edit().putBoolean("crt_on", v).apply(); }
-
     public boolean sounds() { return sp.getBoolean("sounds", true); }
     public void setSounds(boolean v) { sp.edit().putBoolean("sounds", v).apply(); }
 

@@ -13,7 +13,6 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PixelFormat;
 import android.hardware.HardwareBuffer;
-import android.hardware.display.DisplayManager;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
@@ -49,30 +48,12 @@ public class CrtService extends AccessibilityService implements CrtView.Listener
     private long lastVolDown;
     private boolean swallowNextVolUp;
 
-    private CrtView onView;          // power-on overlay (black while the screen is off)
-    private boolean onPlaying;
-    private DisplayManager dm;
-
     private final BroadcastReceiver screenReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (Intent.ACTION_SCREEN_OFF.equals(intent.getAction())) {
                 handler.postDelayed(CrtService.this::removeOverlay, 150);
-                handler.postDelayed(CrtService.this::updateBlack, 350);
-            } else if (Intent.ACTION_SCREEN_ON.equals(intent.getAction())) {
-                startPowerOn();
             }
-        }
-    };
-
-    /** Follows the display: fully OFF -> keep black ready; AOD (doze) -> stay out of the way. */
-    private final DisplayManager.DisplayListener displayListener = new DisplayManager.DisplayListener() {
-        @Override public void onDisplayAdded(int id) { }
-        @Override public void onDisplayRemoved(int id) { }
-        @Override public void onDisplayChanged(int id) {
-            if (id != Display.DEFAULT_DISPLAY) return;
-            int st = displayState();
-            if (st == Display.STATE_ON) startPowerOn(); else updateBlack();
         }
     };
 
@@ -113,11 +94,7 @@ public class CrtService extends AccessibilityService implements CrtView.Listener
     protected void onServiceConnected() {
         instance = this;
         wm = (WindowManager) getSystemService(WINDOW_SERVICE);
-        IntentFilter f = new IntentFilter(Intent.ACTION_SCREEN_OFF);
-        f.addAction(Intent.ACTION_SCREEN_ON);
-        registerReceiver(screenReceiver, f);
-        dm = getSystemService(DisplayManager.class);
-        try { dm.registerDisplayListener(displayListener, handler); } catch (Exception ignored) { }
+        registerReceiver(screenReceiver, new IntentFilter(Intent.ACTION_SCREEN_OFF));
         Sounds.init(this);
         applySettings();
     }
@@ -137,8 +114,6 @@ public class CrtService extends AccessibilityService implements CrtView.Listener
     private void cleanup() {
         instance = null;
         try { unregisterReceiver(screenReceiver); } catch (Exception ignored) { }
-        try { if (dm != null) dm.unregisterDisplayListener(displayListener); } catch (Exception ignored) { }
-        removeOnView();
         removeOverlay();
         removeBubble();
     }
@@ -278,68 +253,6 @@ public class CrtService extends AccessibilityService implements CrtView.Listener
         }
         busy = false;
         restoreBubble();
-    }
-
-    // ------------------------------------------------------------------ power-on
-
-    private int displayState() {
-        try {
-            return wm.getDefaultDisplay().getState();
-        } catch (Exception e) {
-            return Display.STATE_UNKNOWN;
-        }
-    }
-
-    /** While the display is fully off, hold a black layer so the wake-up starts from black. */
-    private void updateBlack() {
-        if (!new Prefs(this).crtOn() || onPlaying) return;
-        int st = displayState();
-        if (st == Display.STATE_OFF) {
-            ensureOnView();
-            if (onView != null) onView.holdBlack();
-        } else if (st != Display.STATE_ON) {
-            removeOnView(); // Always On Display is showing: don't cover it
-        }
-    }
-
-    private void ensureOnView() {
-        if (onView != null) return;
-        CrtView v = new CrtView(this);
-        try {
-            wm.addView(v, fullScreenParams(false));
-            onView = v;
-        } catch (Exception ignored) {
-        }
-    }
-
-    private void startPowerOn() {
-        if (onPlaying) return;
-        if (!new Prefs(this).crtOn()) {
-            removeOnView();
-            return;
-        }
-        ensureOnView();
-        if (onView == null) return;
-        onPlaying = true;
-        CrtView v = onView;
-        v.setListener(() -> {
-            onPlaying = false;
-            removeOnView();
-        });
-        v.playOn();
-        handler.postDelayed(() -> {          // safety net
-            if (onView == v) {
-                onPlaying = false;
-                removeOnView();
-            }
-        }, CrtView.ON_TOTAL_MS + 600);
-    }
-
-    private void removeOnView() {
-        if (onView != null) {
-            try { wm.removeView(onView); } catch (Exception ignored) { }
-            onView = null;
-        }
     }
 
     // ------------------------------------------------------------------ floating button

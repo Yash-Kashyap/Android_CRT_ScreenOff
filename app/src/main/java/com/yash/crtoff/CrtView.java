@@ -38,9 +38,6 @@ public class CrtView extends View {
     public static final float WARM_MS = 67f, SQUEEZE_MS = 117f, LINE_MS = 167f;
     public static final long TOTAL_MS = (long) (WARM_MS + SQUEEZE_MS + LINE_MS);
 
-    /** Power-on (the CyanogenMod-era "CRT on"): line grows across, then opens into the screen. */
-    public static final float ON_LINE_MS = 90f, ON_OPEN_MS = 160f;
-    public static final long ON_TOTAL_MS = (long) (ON_LINE_MS + ON_OPEN_MS);
 
     private final Handler main = new Handler(Looper.getMainLooper());
     private final Paint black = new Paint();
@@ -58,8 +55,6 @@ public class CrtView extends View {
     private boolean finished;
     private long clockOverride = -1; // tests
     private float timeScale = 1f;    // >1 = slow motion preview
-    private boolean onMode;          // power-on instead of power-off
-    private boolean holdBlack;       // solid black, waiting for the screen to wake
 
     public CrtView(Context c) {
         super(c);
@@ -69,27 +64,7 @@ public class CrtView extends View {
 
     public void setListener(Listener l) { listener = l; }
 
-    /** Solid black (screen is off): waits for {@link #playOn()}. */
-    public void holdBlack() {
-        holdBlack = true;
-        onMode = false;
-        start = -1;
-        invalidate();
-    }
-
-    /** Power-on: the live screen is revealed by a line that grows and opens up. */
-    public void playOn() {
-        holdBlack = false;
-        onMode = true;
-        shot = null;
-        start = SystemClock.uptimeMillis();
-        finished = false;
-        postInvalidateOnAnimation();
-    }
-
     public void play(Bitmap screenshotOrNull) {
-        holdBlack = false;
-        onMode = false;
         shot = screenshotOrNull;
         start = SystemClock.uptimeMillis();
         finished = false;
@@ -109,16 +84,8 @@ public class CrtView extends View {
 
     @Override
     protected void onDraw(Canvas c) {
-        if (holdBlack) {
-            c.drawColor(Color.BLACK);
-            return;
-        }
         if (start < 0 && clockOverride < 0) return;
         float t = clockOverride >= 0 ? clockOverride : (SystemClock.uptimeMillis() - start) / timeScale;
-        if (onMode) {
-            drawOn(c, t);
-            return;
-        }
         int w = getWidth(), h = getHeight();
         float cx = w / 2f, cy = h / 2f;
         float lineH = Math.max(2f, 1.6f * density);
@@ -203,50 +170,6 @@ public class CrtView extends View {
                         null, Shader.TileMode.CLAMP));
                 c.drawRect(band.left, cy - gh, band.right, cy + gh, glow);
             }
-        }
-        if (clockOverride < 0) postInvalidateOnAnimation();
-    }
-
-    private void drawOn(Canvas c, float t) {
-        int w = getWidth(), h = getHeight();
-        float cx = w / 2f, cy = h / 2f;
-        float lineH = Math.max(2f, 1.6f * density);
-        float sx, sy, white;
-        if (t < ON_LINE_MS) {                         // a dot of light stretches into a line
-            float e = t / ON_LINE_MS;
-            float f = 1f - (1f - e) * (1f - e);
-            sx = 0.02f + 0.98f * f;
-            sy = lineH / h;
-            white = 1f;
-        } else if (t < ON_TOTAL_MS) {                 // the line opens up into the picture
-            float e = (t - ON_LINE_MS) / ON_OPEN_MS;
-            float f = 1f - (float) Math.pow(1f - e, 2.2);
-            sx = 1f;
-            sy = lerp(lineH / h, 1f, f);
-            white = 1f - (float) Math.pow(e, 0.7);
-        } else {
-            if (!finished) {
-                finished = true;
-                if (listener != null && clockOverride < 0) main.post(listener::onCrtFinished);
-            }
-            return; // fully transparent: the live screen
-        }
-        float bw = w * sx, bh = Math.max(lineH * 0.5f, h * sy);
-        band.set(cx - bw / 2f, cy - bh / 2f, cx + bw / 2f, cy + bh / 2f);
-        c.drawRect(0, 0, w, Math.max(0, band.top), black);
-        c.drawRect(0, Math.min(h, band.bottom), w, h, black);
-        c.drawRect(0, band.top, Math.max(0, band.left), band.bottom, black);
-        c.drawRect(Math.min(w, band.right), band.top, w, band.bottom, black);
-        if (white > 0.005f) {
-            fill.setColor(Color.argb(a255(white), 255, 255, 255));
-            c.drawRect(band, fill);
-        }
-        if (t < ON_LINE_MS + ON_OPEN_MS * 0.3f) {
-            float gh = 7f * density;
-            glow.setShader(new LinearGradient(0, cy - gh, 0, cy + gh,
-                    new int[]{0x00FFFFFF, Color.argb(a255(0.35f), 220, 235, 255), 0x00FFFFFF},
-                    null, Shader.TileMode.CLAMP));
-            c.drawRect(band.left, cy - gh, band.right, cy + gh, glow);
         }
         if (clockOverride < 0) postInvalidateOnAnimation();
     }

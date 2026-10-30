@@ -60,31 +60,4 @@ public class CrtRenderTest {
         render(shot, true, "mask_");
         assertTrue(CrtView.TOTAL_MS >= 330 && CrtView.TOTAL_MS <= 360);
     }
-
-    @Test
-    public void powerOnFrames() throws Exception {
-        Bitmap shot;
-        try (InputStream in = getClass().getClassLoader().getResourceAsStream("ref_screen.png")) {
-            shot = BitmapFactory.decodeStream(in);
-        }
-        int W = 330, H = 560;
-        CrtView v = new CrtView(RuntimeEnvironment.getApplication());
-        v.measure(View.MeasureSpec.makeMeasureSpec(W, View.MeasureSpec.EXACTLY),
-                View.MeasureSpec.makeMeasureSpec(H, View.MeasureSpec.EXACTLY));
-        v.layout(0, 0, W, H);
-        v.playOn();
-        out.mkdirs();
-        for (int k = 0; k < 18; k++) {
-            long t = Math.round(k * 1000.0 / 59.94);
-            Bitmap b = Bitmap.createBitmap(W, H, Bitmap.Config.ARGB_8888);
-            Canvas c = new Canvas(b);
-            c.drawBitmap(shot, 0, 0, null);   // the live lock screen underneath
-            v.setFrameTime(t);
-            v.draw(c);
-            try (FileOutputStream fo = new FileOutputStream(new File(out, String.format("on_%02d.png", k + 1)))) {
-                b.compress(Bitmap.CompressFormat.PNG, 100, fo);
-            }
-        }
-        assertTrue(CrtView.ON_TOTAL_MS == 250);
-    }
 }

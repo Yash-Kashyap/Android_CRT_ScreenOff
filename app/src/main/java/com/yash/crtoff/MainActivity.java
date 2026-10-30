@@ -133,15 +133,6 @@ public class MainActivity extends Activity {
         c2.addView(slow, matchWrap(dp(8)));
         c2.addView(small(getString(R.string.preview_hint)));
 
-        // --- Power on
-        LinearLayout cOn = card(col);
-        cOn.addView(header(getString(R.string.power_on)));
-        cOn.addView(sw(getString(R.string.crt_on), prefs.crtOn(), prefs::setCrtOn), matchWrap(dp(8)));
-        cOn.addView(small(getString(R.string.crt_on_hint)));
-        Button previewOn = button(getString(R.string.preview_on), false);
-        previewOn.setOnClickListener(v -> previewOn());
-        cOn.addView(previewOn, matchWrap(dp(10)));
-
         // --- Triggers
         LinearLayout c3 = card(col);
         c3.addView(header(getString(R.string.triggers)));
@@ -203,16 +194,6 @@ public class MainActivity extends Activity {
                     snap.recycle();
                 }).start(), 450));
         v.play(snap);
-    }
-
-    /** Power-on preview over this screen (slowed 3x so it's easy to see). */
-    private void previewOn() {
-        CrtView v = new CrtView(this);
-        v.setTimeScale(3f);
-        rootFrame.addView(v, new FrameLayout.LayoutParams(-1, -1));
-        v.holdBlack();
-        v.setListener(() -> rootFrame.removeView(v));
-        v.postDelayed(v::playOn, 500);
     }
 
     private void openAccessibility() {

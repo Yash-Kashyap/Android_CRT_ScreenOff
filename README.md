@@ -11,7 +11,7 @@ Android 9 and newer. No root, no internet permission.
    glowing brighter and turning white.
 3. **The line, 167 ms**: the bright full-width line thins, shortens slightly and fades out.
 
-Optional CRT power-on when the screen wakes (on by default): a line stretches across and opens into the screen in 250 ms. Never covers the Always On Display.
+Turning the screen on is instant, as on the original phones.
 
 ## How to switch off with it
 
@@ -26,7 +26,7 @@ already dark, so these triggers play the animation and then switch the screen of
 
 ## Setup
 
-1. Install `release/CrtOff-v1.1.apk` and open **CRT Off**.
+1. Install `release/CrtOff-v1.2.apk` and open **CRT Off**.
 2. Turn on **CRT Off – screen-off service** in Accessibility settings. On Android 13+, if it's greyed
    out: App info → ⋮ → *Allow restricted settings* first.
 
