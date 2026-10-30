@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:shortcutId="crt_off"
+        android:enabled="true"
+        android:icon="@mipmap/ic_shortcut"
+        android:shortcutShortLabel="@string/shortcut_label"
+        android:shortcutLongLabel="@string/shortcut_long">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="com.yash.crtoff"
+            android:targetClass="com.yash.crtoff.TriggerActivity" />
+    </shortcut>
+</shortcuts>

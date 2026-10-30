@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Reads no screen content (canRetrieveWindowContent=false) and only receives this app's own
+     events. Screenshot = the animation's picture; key events = optional Volume Down trigger. -->
+<accessibility-service xmlns:android="http://schemas.android.com/apk/res/android"
+    android:description="@string/service_description"
+    android:summary="@string/service_summary"
+    android:accessibilityEventTypes="typeAnnouncement"
+    android:packageNames="com.yash.crtoff"
+    android:accessibilityFeedbackType="feedbackGeneric"
+    android:accessibilityFlags="flagDefault"
+    android:canRetrieveWindowContent="false"
+    android:canTakeScreenshot="true"
+    android:canRequestFilterKeyEvents="true"
+    android:notificationTimeout="1000" />
