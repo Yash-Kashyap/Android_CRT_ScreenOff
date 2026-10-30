@@ -12,17 +12,6 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
-        <activity
-            android:name=".MainActivity"
-            android:exported="true"
-            android:launchMode="singleTask">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-            <meta-data android:name="android.app.shortcuts" android:resource="@xml/shortcuts" />
-        </activity>
-
         <!-- Invisible trampoline for the shortcut and the Quick Settings tile. -->
         <activity
             android:name=".TriggerActivity"
@@ -45,6 +34,20 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity-alias>
+
+        <!-- Declared after "CRT off now" on purpose: launchers that remember only the
+             package (Samsung Side key → Open app) start the first entry, which must be
+             the screen-off one. The home-screen icons still open their own entry. -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:launchMode="singleTask">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <meta-data android:name="android.app.shortcuts" android:resource="@xml/shortcuts" />
+        </activity>
 
         <service
             android:name=".CrtTileService"

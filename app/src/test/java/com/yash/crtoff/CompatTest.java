@@ -67,4 +67,17 @@ public class CompatTest {
         ActivityController<TriggerActivity> c = Robolectric.buildActivity(TriggerActivity.class, i).setup();
         assertTrue(c.get().isFinishing());
     }
+
+    /** Samsung's Side key "Open app" starts the package's launch entry: it must be CRT off now. */
+    @Test
+    public void packageLaunchEntryIsScreenOff() throws Exception {
+        android.content.Context ctx = org.robolectric.RuntimeEnvironment.getApplication();
+        java.util.List<android.content.pm.ResolveInfo> l = ctx.getPackageManager().queryIntentActivities(
+                new android.content.Intent(android.content.Intent.ACTION_MAIN)
+                        .addCategory(android.content.Intent.CATEGORY_LAUNCHER)
+                        .setPackage("com.yash.crtoff"), 0);
+        assertTrue("launcher entries: " + l.size(), l.size() >= 2);
+        String first = l.get(0).activityInfo.name;
+        assertTrue("first launch entry was " + first, first.endsWith("CrtOffNow"));
+    }
 }

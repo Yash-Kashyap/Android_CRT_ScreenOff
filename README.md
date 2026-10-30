@@ -19,14 +19,14 @@ Turning the screen on is instant, as on the original phones.
 - **Quick Settings tile** "CRT off"
 - **Home-screen shortcut**
 - **Double-press Volume Down** (optional)
-- **Samsung side key**: Settings → Advanced features → Side key → Double press → Open app → "CRT off now"
+- **Samsung side key**: Settings → Advanced features → Side key → Double press → Open app → "CRT off now" (Samsung may show it as "CRT Off" afterwards; that's fine)
 
 Android doesn't let apps animate the real power button. Apps are only told after the screen is
 already dark, so these triggers play the animation and then switch the screen off themselves.
 
 ## Setup
 
-1. Install `release/CrtOff-v1.2.apk` and open **CRT Off**.
+1. Install the latest APK from [Releases](https://github.com/Yash-Kashyap/Android_CRT_ScreenOff/releases) and open **CRT Off**.
 2. Turn on **CRT Off – screen-off service** in Accessibility settings. On Android 13+, if it's greyed
    out: App info → ⋮ → *Allow restricted settings* first.
 
