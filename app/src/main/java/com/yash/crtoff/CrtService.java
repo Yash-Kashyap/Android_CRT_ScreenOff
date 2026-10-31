@@ -193,6 +193,7 @@ public class CrtService extends AccessibilityService implements CrtView.Listener
     private void start(long delayMs) {
         if (busy) return;
         busy = true;
+        Sounds.warm(this); // wake the audio output now, so the click at the end is instant
         if (bubble != null) bubble.setVisibility(View.INVISIBLE);
         // let the shade / button / launcher settle so the snapshot shows the real screen
         handler.postDelayed(this::capture, Math.max(40, delayMs));
@@ -266,8 +267,29 @@ public class CrtService extends AccessibilityService implements CrtView.Listener
     }
 
     @Override
+    public void onCrtSoundCue() {
+        // Blinds Lock / Sparkle Lock, if running, play their own lock click right now (and
+        // tell us so) instead of waiting for Android's late "screen off" notice. If neither
+        // answers, we play ours.
+        Intent i = new Intent(ACTION_LOCKING).addFlags(Intent.FLAG_RECEIVER_FOREGROUND);
+        try {
+            sendOrderedBroadcast(i, null, new BroadcastReceiver() {
+                @Override
+                public void onReceive(Context c, Intent in) {
+                    if (getResultCode() != LOCK_SOUND_TAKEN) Sounds.playLock(CrtService.this);
+                }
+            }, handler, 0, null, null);
+        } catch (Exception e) {
+            Sounds.playLock(this);
+        }
+    }
+
+    /** Sent just before the CRT off locks the phone. Receivers answer LOCK_SOUND_TAKEN. */
+    public static final String ACTION_LOCKING = "com.yash.crtoff.action.LOCKING";
+    public static final int LOCK_SOUND_TAKEN = 1;
+
+    @Override
     public void onCrtFinished() {
-        Sounds.playLock(this);
         boolean ok = performGlobalAction(GLOBAL_ACTION_LOCK_SCREEN);
         // Black stays up until the screen is off (removed on SCREEN_OFF), with a safety net.
         handler.postDelayed(this::removeOverlay, ok ? 2000 : 0);

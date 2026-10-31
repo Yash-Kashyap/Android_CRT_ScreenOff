@@ -131,4 +131,25 @@ public class CompatTest {
         assertFalse(s.isBusyForTest());
         s.onDestroy();
     }
+
+    /** With no lock-screen app answering, CRT Off plays its own click at the cue. */
+    @Test
+    public void crtCuePlaysOwnClickWhenNobodyAnswers() {
+        android.content.Context app = org.robolectric.RuntimeEnvironment.getApplication();
+        app.getSystemService(android.media.AudioManager.class)
+                .setRingerMode(android.media.AudioManager.RINGER_MODE_NORMAL);
+        CrtService s = Robolectric.setupService(CrtService.class);
+        s.onServiceConnected();
+        Sounds.playedForTest().clear();
+        s.onCrtSoundCue();
+        shadowOf(Looper.getMainLooper()).idle();
+        assertTrue(Sounds.playedForTest().contains(R.raw.lock));
+        s.onDestroy();
+    }
+
+    /** The click is cued shortly before the line vanishes, not after the animation. */
+    @Test
+    public void soundCueComesBeforeTheEnd() {
+        assertTrue(CrtView.SOUND_LEAD_MS > 0 && CrtView.SOUND_LEAD_MS < CrtView.LINE_MS);
+    }
 }

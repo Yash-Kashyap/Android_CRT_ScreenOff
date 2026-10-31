@@ -33,7 +33,14 @@ import android.view.View;
  */
 public class CrtView extends View {
 
-    public interface Listener { void onCrtFinished(); }
+    public interface Listener {
+        void onCrtFinished();
+        /** Time to start the lock click so it is heard as the line vanishes. */
+        default void onCrtSoundCue() { }
+    }
+
+    /** How long before the end the click is started: covers the speaker's output delay. */
+    public static final long SOUND_LEAD_MS = 70;
 
     public static final float WARM_MS = 67f, SQUEEZE_MS = 117f, LINE_MS = 167f;
     public static final long TOTAL_MS = (long) (WARM_MS + SQUEEZE_MS + LINE_MS);
@@ -52,7 +59,7 @@ public class CrtView extends View {
     private Listener listener;
     private Bitmap shot;
     private long start = -1;
-    private boolean finished;
+    private boolean finished, cued;
     private long clockOverride = -1; // tests
     private float timeScale = 1f;    // >1 = slow motion preview
 
@@ -68,6 +75,7 @@ public class CrtView extends View {
         shot = screenshotOrNull;
         start = SystemClock.uptimeMillis();
         finished = false;
+        cued = false;
         postInvalidateOnAnimation();
     }
 
@@ -89,6 +97,11 @@ public class CrtView extends View {
         int w = getWidth(), h = getHeight();
         float cx = w / 2f, cy = h / 2f;
         float lineH = Math.max(2f, 1.6f * density);
+
+        if (!cued && t >= TOTAL_MS - SOUND_LEAD_MS && clockOverride < 0) {
+            cued = true;
+            if (listener != null) listener.onCrtSoundCue(); // straight away, not posted
+        }
 
         float sx = 1f, sy, white, dark, ghost, glowUp, lineAlpha = 1f;
         if (t < WARM_MS) {
