@@ -1,5 +1,6 @@
 package com.yash.crtoff;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.robolectric.Shadows.shadowOf;
@@ -79,5 +80,55 @@ public class CompatTest {
         assertTrue("launcher entries: " + l.size(), l.size() >= 2);
         String first = l.get(0).activityInfo.name;
         assertTrue("first launch entry was " + first, first.endsWith("CrtOffNow"));
+    }
+
+    private static android.view.KeyEvent key(int action, int code) {
+        return new android.view.KeyEvent(action, code);
+    }
+
+    /** Xperia camera key: one press is left for the shutter, a quick double press plays the CRT. */
+    @Test
+    public void cameraKeyDoublePress() {
+        android.content.Context app = org.robolectric.RuntimeEnvironment.getApplication();
+        CrtService s = Robolectric.setupService(CrtService.class);
+        s.onServiceConnected();
+        int D = android.view.KeyEvent.ACTION_DOWN, U = android.view.KeyEvent.ACTION_UP;
+        int F = android.view.KeyEvent.KEYCODE_FOCUS, C = android.view.KeyEvent.KEYCODE_CAMERA;
+
+        // switched off: nothing is taken
+        assertFalse(s.onKeyEvent(key(D, C)));
+        assertFalse(s.onKeyEvent(key(U, C)));
+
+        new Prefs(app).setCameraDoublePress(true);
+        shadowOf(Looper.getMainLooper()).idleFor(Duration.ofSeconds(2));
+        // first press passes through untouched
+        assertFalse(s.onKeyEvent(key(D, F)));
+        assertFalse(s.onKeyEvent(key(D, C)));
+        assertFalse(s.onKeyEvent(key(U, C)));
+        assertFalse(s.onKeyEvent(key(U, F)));
+        assertFalse(s.isBusyForTest());
+        // second press within the window: swallowed and plays the CRT off
+        shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(150));
+        assertFalse(s.onKeyEvent(key(D, F)));
+        assertTrue(s.onKeyEvent(key(D, C)));
+        assertTrue(s.isBusyForTest());
+        assertTrue(s.onKeyEvent(key(U, C)));
+        assertTrue(s.onKeyEvent(key(U, F)));
+        for (int i = 0; i < 60; i++) shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(16));
+        s.onDestroy();
+    }
+
+    @Test
+    public void cameraPressesTooFarApartDoNothing() {
+        android.content.Context app = org.robolectric.RuntimeEnvironment.getApplication();
+        new Prefs(app).setCameraDoublePress(true);
+        CrtService s = Robolectric.setupService(CrtService.class);
+        s.onServiceConnected();
+        int D = android.view.KeyEvent.ACTION_DOWN, C = android.view.KeyEvent.KEYCODE_CAMERA;
+        assertFalse(s.onKeyEvent(key(D, C)));
+        shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(900));
+        assertFalse(s.onKeyEvent(key(D, C)));
+        assertFalse(s.isBusyForTest());
+        s.onDestroy();
     }
 }

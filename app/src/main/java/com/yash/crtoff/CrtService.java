@@ -44,9 +44,13 @@ public class CrtService extends AccessibilityService implements CrtView.Listener
     private CrtView crtView;
     private Bitmap shot;
     private boolean busy;
+
+    /** For tests. */
+    boolean isBusyForTest() { return busy; }
     private View bubble;
-    private long lastVolDown;
-    private boolean swallowNextVolUp;
+    private final long[] lastDown = {-10_000, -10_000}; // [volume down, camera]
+    private final boolean[] swallowUp = new boolean[2];
+    private boolean swallowFocusUp;
 
     private final BroadcastReceiver screenReceiver = new BroadcastReceiver() {
         @Override
@@ -125,7 +129,7 @@ public class CrtService extends AccessibilityService implements CrtView.Listener
         Prefs p = new Prefs(this);
         AccessibilityServiceInfo info = getServiceInfo();
         if (info != null) {
-            if (p.volumeDoublePress()) info.flags |= AccessibilityServiceInfo.FLAG_REQUEST_FILTER_KEY_EVENTS;
+            if (p.volumeDoublePress() || p.cameraDoublePress()) info.flags |= AccessibilityServiceInfo.FLAG_REQUEST_FILTER_KEY_EVENTS;
             else info.flags &= ~AccessibilityServiceInfo.FLAG_REQUEST_FILTER_KEY_EVENTS;
             setServiceInfo(info);
         }
@@ -138,23 +142,50 @@ public class CrtService extends AccessibilityService implements CrtView.Listener
     /** Double-press Volume Down: the first press still changes volume; the second switches off. */
     @Override
     protected boolean onKeyEvent(KeyEvent e) {
-        if (e.getKeyCode() != KeyEvent.KEYCODE_VOLUME_DOWN || !new Prefs(this).volumeDoublePress()) {
-            return false;
+        Prefs p = new Prefs(this);
+        int code = e.getKeyCode();
+        if (code == KeyEvent.KEYCODE_VOLUME_DOWN && p.volumeDoublePress()) {
+            return doublePress(e, 0, 400);
         }
+        // Camera key (Xperia and others): a full press sends FOCUS then CAMERA. Count the
+        // CAMERA presses; a single press stays free for the camera app's shutter.
+        if ((code == KeyEvent.KEYCODE_CAMERA || code == KeyEvent.KEYCODE_FOCUS) && p.cameraDoublePress()) {
+            if (code == KeyEvent.KEYCODE_FOCUS) {
+                // swallow the release of the half-press that belonged to the triggering press
+                if (e.getAction() == KeyEvent.ACTION_UP && swallowFocusUp) {
+                    swallowFocusUp = false;
+                    return true;
+                }
+                return false;
+            }
+            boolean consumed = doublePress(e, 1, 500);
+            if (consumed && e.getAction() == KeyEvent.ACTION_DOWN) swallowFocusUp = true;
+            return consumed;
+        }
+        return false;
+    }
+
+    /** Two presses within {@code windowMs}: plays the CRT off and swallows the second press. */
+    private boolean doublePress(KeyEvent e, int slot, long windowMs) {
         if (e.getAction() == KeyEvent.ACTION_DOWN && e.getRepeatCount() == 0) {
             long now = SystemClock.uptimeMillis();
-            if (now - lastVolDown < 400) {
-                lastVolDown = 0;
-                swallowNextVolUp = true;
+            if (now - lastDown[slot] < windowMs && screenOn()) {
+                lastDown[slot] = 0;
+                swallowUp[slot] = true;
                 start(40);
                 return true;
             }
-            lastVolDown = now;
-        } else if (e.getAction() == KeyEvent.ACTION_UP && swallowNextVolUp) {
-            swallowNextVolUp = false;
+            lastDown[slot] = now;
+        } else if (e.getAction() == KeyEvent.ACTION_UP && swallowUp[slot]) {
+            swallowUp[slot] = false;
             return true;
         }
         return false;
+    }
+
+    private boolean screenOn() {
+        android.os.PowerManager pm = getSystemService(android.os.PowerManager.class);
+        return pm == null || pm.isInteractive();
     }
 
     // ------------------------------------------------------------------ the animation

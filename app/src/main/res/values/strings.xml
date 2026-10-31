@@ -28,6 +28,8 @@
     <string name="button_size">Button size</string>
     <string name="button_opacity">Button opacity</string>
     <string name="floating_hint">Tap it to switch off with the CRT animation. Drag it to move; it snaps to the screen edge.</string>
+    <string name="camera_double">Double-press the camera key</string>
+    <string name="camera_hint">For phones with a camera button, like Sony Xperia. A single press still works as the camera shutter; holding it still opens the camera.</string>
     <string name="volume_double">Double-press Volume Down</string>
     <string name="volume_hint">Press Volume Down twice quickly to switch off. The first press still changes the volume by one step.</string>
     <string name="add_tile">Add Quick Settings tile</string>

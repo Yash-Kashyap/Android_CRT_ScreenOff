@@ -27,6 +27,9 @@ public final class Prefs {
     public boolean volumeDoublePress() { return sp.getBoolean("volume_double", false); }
     public void setVolumeDoublePress(boolean v) { sp.edit().putBoolean("volume_double", v).apply(); }
 
+    public boolean cameraDoublePress() { return sp.getBoolean("camera_double", false); }
+    public void setCameraDoublePress(boolean v) { sp.edit().putBoolean("camera_double", v).apply(); }
+
     public boolean sounds() { return sp.getBoolean("sounds", true); }
     public void setSounds(boolean v) { sp.edit().putBoolean("sounds", v).apply(); }
 

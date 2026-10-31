@@ -19,6 +19,7 @@ Turning the screen on is instant, as on the original phones.
 - **Quick Settings tile** "CRT off"
 - **Home-screen shortcut**
 - **Double-press Volume Down** (optional)
+- **Double-press the camera key** (optional, phones with a camera button such as Sony Xperia; a single press still works as the shutter)
 - **Samsung side key**: Settings → Advanced features → Side key → Double press → Open app → "CRT off now" (Samsung may show it as "CRT Off" afterwards; that's fine)
 
 Android doesn't let apps animate the real power button. Apps are only told after the screen is

@@ -154,6 +154,13 @@ public class MainActivity extends Activity {
             CrtService.refresh();
         }), matchWrap(dp(12)));
         c3.addView(small(getString(R.string.volume_hint)));
+        if (hasCameraKey()) {
+            c3.addView(sw(getString(R.string.camera_double), prefs.cameraDoublePress(), on -> {
+                prefs.setCameraDoublePress(on);
+                CrtService.refresh();
+            }), matchWrap(dp(12)));
+            c3.addView(small(getString(R.string.camera_hint)));
+        }
         Button tile = button(getString(R.string.add_tile), false);
         tile.setOnClickListener(v -> addTile());
         c3.addView(tile, matchWrap(dp(12)));
@@ -342,5 +349,10 @@ public class MainActivity extends Activity {
     private int dp(int v) {
         return Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, v,
                 getResources().getDisplayMetrics()));
+    }
+
+    /** Phones with a hardware camera button (Sony Xperia and some others). */
+    static boolean hasCameraKey() {
+        return android.view.KeyCharacterMap.deviceHasKey(android.view.KeyEvent.KEYCODE_CAMERA);
     }
 }
