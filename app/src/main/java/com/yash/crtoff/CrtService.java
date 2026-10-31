@@ -392,12 +392,19 @@ public class CrtService extends AccessibilityService implements CrtView.Listener
         private final Paint bg = new Paint(Paint.ANTI_ALIAS_FLAG);
         private final Paint fg = new Paint(Paint.ANTI_ALIAS_FLAG);
 
+        /** Icon stays readable down to 15 %, then fades out with the button, invisible at 0 %. */
+        static float iconAlpha(float opacity) {
+            if (opacity <= 0f) return 0f;
+            if (opacity < 0.15f) return opacity / 0.15f * 0.4f;
+            return Math.min(1f, Math.max(0.4f, opacity));
+        }
+
         BubbleView(Context c, float opacity) {
             super(c);
-            bg.setColor(Color.argb(Math.round(255 * Math.max(0.15f, opacity)), 20, 22, 28));
+            bg.setColor(Color.argb(Math.round(255 * Math.max(0f, Math.min(1f, opacity))), 20, 22, 28));
             fg.setStyle(Paint.Style.STROKE);
             fg.setStrokeCap(Paint.Cap.ROUND);
-            fg.setColor(Color.argb(Math.round(255 * Math.max(0.4f, opacity)), 255, 255, 255));
+            fg.setColor(Color.argb(Math.round(255 * iconAlpha(opacity)), 255, 255, 255));
             setContentDescription(c.getString(R.string.button_desc));
         }
 

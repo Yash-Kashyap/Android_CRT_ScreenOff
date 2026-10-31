@@ -152,4 +152,16 @@ public class CompatTest {
     public void soundCueComesBeforeTheEnd() {
         assertTrue(CrtView.SOUND_LEAD_MS > 0 && CrtView.SOUND_LEAD_MS < CrtView.LINE_MS);
     }
+
+    @Test
+    public void invisibleButtonStillTaps() {
+        assertTrue(CrtService.BubbleView.iconAlpha(0f) == 0f);
+        assertTrue(CrtService.BubbleView.iconAlpha(0.15f) >= 0.4f);
+        android.content.Context app = org.robolectric.RuntimeEnvironment.getApplication();
+        new Prefs(app).setButtonOpacity(0);
+        CrtService s = Robolectric.setupService(CrtService.class);
+        s.onServiceConnected();
+        assertTrue(CrtService.isRunning());
+        s.onDestroy();
+    }
 }

@@ -144,7 +144,7 @@ public class MainActivity extends Activity {
             prefs.setButtonSizeDp(v);
             CrtService.refresh();
         });
-        slider(c3, getString(R.string.button_opacity), 15, 100, prefs.buttonOpacity(), " %", v -> {
+        slider(c3, getString(R.string.button_opacity), 0, 100, prefs.buttonOpacity(), " %", v -> {
             prefs.setButtonOpacity(v);
             CrtService.refresh();
         });
